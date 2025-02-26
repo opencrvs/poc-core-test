@@ -26,6 +26,8 @@ jobs:
           git config user.name "GitHub Actions"
 
       - name: Sync Fork
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           BASE_BRANCH=${{ github.event.pull_request.base.ref }}
           gh auth login
