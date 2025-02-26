@@ -16,7 +16,18 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.base.ref }}
 
+      - name: Check if PR branch exists in bar repository
+        id: check_branch
+        run: |
+          BASE_BRANCH=${{ github.event.pull_request.base.ref }}
+          if git ls-remote --heads https://${{ secrets.MY_TOKEN }}@github.com/adskyiproger/poc-core-test-my.git "$BASE_BRANCH" | grep "$BASE_BRANCH"; then
+            echo "branch_exists=true" >> $GITHUB_ENV
+          else
+            echo "branch_exists=false" >> $GITHUB_ENV
+          fi
+
       - name: Sync Fork
+        if: env.branch_exists == 'true'
         env:
           GH_TOKEN: ${{ secrets.MY_TOKEN }}
         run: |
