@@ -1,0 +1,100 @@
+name: Sync Changes to Fork
+
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  sync_changes:
+    if: ${{ github.event.pull_request.merged == true }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout foo repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+
+      - name: Check if PR branch exists in bar repository
+        id: check_branch
+        run: |
+          BASE_BRANCH=${{ github.event.pull_request.base.ref }}
+          if git ls-remote --heads https://<YOUR_PERSONAL_ACCESS_TOKEN>@github.com/<YOUR_USERNAME>/bar.git "$BASE_BRANCH" | grep "$BASE_BRANCH"; then
+            echo "branch_exists=true" >> $GITHUB_ENV
+          else
+            echo "branch_exists=false" >> $GITHUB_ENV
+          fi
+
+      - name: Exit if branch does not exist in bar
+        if: env.branch_exists == 'false'
+        run: echo "Branch does not exist in 'bar'. Exiting."
+
+      - name: Add remote for bar repository
+        if: env.branch_exists == 'true'
+        run: |
+          git remote add bar https://<YOUR_PERSONAL_ACCESS_TOKEN>@github.com/<YOUR_USERNAME>/bar.git
+
+      - name: Fetch bar repository
+        if: env.branch_exists == 'true'
+        run: |
+          git fetch bar
+
+      - name: Attempt to merge changes into bar
+        if: env.branch_exists == 'true'
+        run: |
+          BASE_BRANCH=${{ github.event.pull_request.base.ref }}
+          git checkout $BASE_BRANCH
+          git pull origin $BASE_BRANCH
+          git merge bar/$BASE_BRANCH || echo "Merge conflict detected. Creating pull request."
+
+      - name: Push changes to bar repository
+        if: env.branch_exists == 'true' && success()
+        run: |
+          BASE_BRANCH=${{ github.event.pull_request.base.ref }}
+          git push bar $BASE_BRANCH
+
+      - name: Handle merge conflicts by creating pull request
+        if: env.branch_exists == 'true' && failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const { context, github } = require("@actions/github");
+            const baseBranch = context.payload.pull_request.base.ref;
+            const headBranch = `conflict-fix-${context.payload.pull_request.number}`;
+
+            // Create new branch in foo repository
+            await github.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/heads/${headBranch}`,
+              sha: context.sha,
+            });
+
+            // Push the new branch to bar repository
+            require('child_process').execSync(`git push bar refs/heads/${baseBranch}:refs/heads/${headBranch}`);
+
+            // Create pull request in bar repository
+            await github.pulls.create({
+              owner: context.repo.owner,
+              repo: 'bar',
+              title: `Resolve merge conflicts between ${baseBranch} and ${context.repo.repo}`,
+              head: headBranch,
+              base: baseBranch,
+              body: `This pull request resolves merge conflicts between \`${baseBranch}\` in \`foo\` repository and \`${baseBranch}\` in \`bar\` repository.`,
+            });
+
+### Secrets Required:
+# - `YOUR_PERSONAL_ACCESS_TOKEN`: A token with access to the `bar` repository
+# - `YOUR_USERNAME`: Your GitHub username
+
+### Explanation:
+
+# 1. The workflow is triggered when a pull request is closed in the `foo` repository.
+# 2. It checks if the pull request was merged.
+# 3. The workflow then checks whether the base branch of the pull request exists in the `bar` repository.
+# 4. If the branch exists in the `bar` repository, the workflow attempts to merge the changes.
+# 5. If there are no merge conflicts, it pushes the changes to the `bar` repository.
+# 6. If there are merge conflicts, it creates a new branch to resolve the conflicts and opens a pull request.
+
+# **Note**: The `github-script` action is used to interact with the GitHub API, so you may need to install any dependencies or adjust the script accordingly based on your environment.
