@@ -54,16 +54,19 @@ jobs:
           git pull origin $BASE_BRANCH
           git merge bar/$BASE_BRANCH --allow-unrelated-histories || \
           (git merge --abort && echo "Merge conflict detected. Creating pull request.")
+          git status
 
       - name: Pull latest changes from bar before pushing
         if: env.branch_exists == 'true' && !failure()
         run: |
           BASE_BRANCH=${{ github.event.pull_request.base.ref }}
-          git pull --rebase bar $BASE_BRANCH
+          git pull --rebase bar $BASE_BRANCH || git status
+          git status
 
       - name: Push changes to bar repository
         if: env.branch_exists == 'true' && !failure()
         run: |
+          git status
           BASE_BRANCH=${{ github.event.pull_request.base.ref }}
           git push bar $BASE_BRANCH
 
