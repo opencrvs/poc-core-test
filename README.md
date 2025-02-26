@@ -10,3 +10,5 @@ Adding line
 One more line
 
 One more line
+
+Once more line should fail
