@@ -37,7 +37,10 @@ jobs:
 
       - name: Fetch bar repository
         if: env.branch_exists == 'true'
+        # TODO: Add your email and name delete before commit
         run: |
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
           git fetch bar
 
       - name: Attempt to merge changes into bar
