@@ -31,6 +31,7 @@ jobs:
           fi
 
       - name: Sync Fork
+        id: sync_fork
         if: env.branch_exists == 'true'
         env:
           GH_TOKEN: ${{ secrets.MY_TOKEN }}
@@ -38,3 +39,6 @@ jobs:
           BASE_BRANCH=${{ github.event.pull_request.base.ref }}
           gh repo sync adskyiproger/poc-core-test-my --branch ${BASE_BRANCH}
 
+      - name: Create PR in adskyiproger/poc-core-test-my
+        if: steps.sync_fork.outcome == 'failure'
+        run: echo "The 'sync_fork' step failed explicitly. Creating a PR in adskyiproger/poc-core-test-my"
