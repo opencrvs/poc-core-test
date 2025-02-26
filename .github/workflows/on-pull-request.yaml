@@ -33,6 +33,7 @@ jobs:
       - name: Sync Fork
         id: sync_fork
         if: env.branch_exists == 'true'
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.MY_TOKEN }}
         run: |
