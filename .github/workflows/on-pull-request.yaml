@@ -26,11 +26,9 @@ jobs:
           git config user.name "GitHub Actions"
 
       - name: Sync Fork
-        env:
-          GH_TOKEN: ${{ secrets.REPOSITORY_TOKEN }}
         run: |
           BASE_BRANCH=${{ github.event.pull_request.base.ref }}
           gh auth login
           echo $BASE_BRANCH
           gh repo sync adskyiproger/poc-core-test-my --branch main
-          gh auth logout":
+          gh auth logout
