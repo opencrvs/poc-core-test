@@ -23,6 +23,10 @@ jobs:
           if git ls-remote --heads https://${{ secrets.MY_TOKEN }}@github.com/adskyiproger/poc-core-test-my.git "$BASE_BRANCH" | grep "$BASE_BRANCH"; then
             echo "branch_exists=true" >> $GITHUB_ENV
           else
+            echo "=============================================="
+            echo " 🚀 Branch $BASE_BRANCH doesn't exist in repository adskyiproger/poc-core-test-my"
+            echo " 🚪 Doing exit"
+            echo "=============================================="
             echo "branch_exists=false" >> $GITHUB_ENV
           fi
 
