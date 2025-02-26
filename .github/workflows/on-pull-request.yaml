@@ -48,8 +48,14 @@ jobs:
           git pull origin $BASE_BRANCH
           git merge bar/$BASE_BRANCH || echo "Merge conflict detected. Creating pull request."
 
+      - name: Pull latest changes from bar before pushing
+        if: env.branch_exists == 'true' && !failure()
+        run: |
+          BASE_BRANCH=${{ github.event.pull_request.base.ref }}
+          git pull --rebase bar $BASE_BRANCH
+
       - name: Push changes to bar repository
-        if: env.branch_exists == 'true' && success()
+        if: env.branch_exists == 'true' && !failure()
         run: |
           BASE_BRANCH=${{ github.event.pull_request.base.ref }}
           git push bar $BASE_BRANCH
