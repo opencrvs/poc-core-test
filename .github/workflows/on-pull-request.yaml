@@ -6,113 +6,31 @@ on:
       - closed
 
 jobs:
-  sync_changes:
+  sync_fork:
     if: ${{ github.event.pull_request.merged == true }}
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout foo repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.base.ref }}
+      - name: Set up GitHub CLI
+        uses: cli/setup-gh@v1
+        with:
+          version: latest
+    
+      - name: Configure Git
+        run: |
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
 
-      - name: Check if PR branch exists in bar repository
-        id: check_branch
+      - name: Sync Fork
+        env:
+          GH_TOKEN: ${{ secrets.REPOSITORY_TOKEN }}
         run: |
           BASE_BRANCH=${{ github.event.pull_request.base.ref }}
-          git ls-remote --heads https://${{ secrets.REPOSITORY_TOKEN }}@github.com/adskyiproger/poc-core-test-my.git "$BASE_BRANCH"
-          if git ls-remote --heads https://${{ secrets.REPOSITORY_TOKEN }}@github.com/adskyiproger/poc-core-test-my.git "$BASE_BRANCH" | grep "$BASE_BRANCH"; then
-            echo "branch_exists=true" >> $GITHUB_ENV
-          else
-            echo "branch_exists=false" >> $GITHUB_ENV
-          fi
-
-      - name: Exit if branch does not exist in bar
-        if: env.branch_exists == 'false'
-        run: echo "Branch does not exist in 'bar'. Exiting."
-
-      - name: Add remote for bar repository
-        if: env.branch_exists == 'true'
-        run: |
-          git remote add bar https://${{ secrets.REPOSITORY_TOKEN }}@github.com/adskyiproger/poc-core-test-my.git
-          git remote -v
-
-      - name: Fetch bar repository
-        if: env.branch_exists == 'true'
-        # TODO: Add your email and name delete before commit
-        run: |
-          git config --global user.email "you@example.com"
-          git config --global user.name "Your Name"
-          git fetch bar
-
-      - name: Attempt to merge changes into bar
-        if: env.branch_exists == 'true'
-        run: |
-          BASE_BRANCH=${{ github.event.pull_request.base.ref }}
-          echo "BASE_BRANCH: $BASE_BRANCH"
-          git checkout $BASE_BRANCH
-          git pull origin $BASE_BRANCH
-          git merge -m 'Merge pull request' --allow-unrelated-histories bar/$BASE_BRANCH || \
-          (git merge --abort && echo "Merge conflict detected. Creating pull request.")
-          git status
-
-      - name: Pull latest changes from bar before pushing
-        if: env.branch_exists == 'true' && !failure()
-        run: |
-          git status
-          echo "========================"
-          BASE_BRANCH=${{ github.event.pull_request.base.ref }}
-          git pull --rebase bar $BASE_BRANCH || git status
-          git status
-
-      - name: Push changes to bar repository
-        if: env.branch_exists == 'true' && !failure()
-        run: |
-          git status
-          BASE_BRANCH=${{ github.event.pull_request.base.ref }}
-          git push bar $BASE_BRANCH
-
-      # - name: Handle merge conflicts by creating pull request
-      #   if: env.branch_exists == 'true' && failure()
-      #   uses: actions/github-script@v6
-      #   with:
-      #     script: |
-      #       const { context, github } = require("@actions/github");
-      #       const baseBranch = context.payload.pull_request.base.ref;
-      #       const headBranch = `conflict-fix-${context.payload.pull_request.number}`;
-
-      #       // Create new branch in foo repository
-      #       await github.git.createRef({
-      #         owner: context.repo.owner,
-      #         repo: context.repo.repo,
-      #         ref: `refs/heads/${headBranch}`,
-      #         sha: context.sha,
-      #       });
-
-      #       // Push the new branch to bar repository
-      #       require('child_process').execSync(`git push bar refs/heads/${baseBranch}:refs/heads/${headBranch}`);
-
-      #       // Create pull request in bar repository
-      #       await github.pulls.create({
-      #         owner: context.repo.owner,
-      #         repo: 'bar',
-      #         title: `Resolve merge conflicts between ${baseBranch} and ${context.repo.repo}`,
-      #         head: headBranch,
-      #         base: baseBranch,
-      #         body: `This pull request resolves merge conflicts between \`${baseBranch}\` in \`foo\` repository and \`${baseBranch}\` in \`bar\` repository.`,
-      #       });
-
-### Secrets Required:
-# - `YOUR_PERSONAL_ACCESS_TOKEN`: A token with access to the `bar` repository
-# - `YOUR_USERNAME`: Your GitHub username
-
-### Explanation:
-
-# 1. The workflow is triggered when a pull request is closed in the `foo` repository.
-# 2. It checks if the pull request was merged.
-# 3. The workflow then checks whether the base branch of the pull request exists in the `bar` repository.
-# 4. If the branch exists in the `bar` repository, the workflow attempts to merge the changes.
-# 5. If there are no merge conflicts, it pushes the changes to the `bar` repository.
-# 6. If there are merge conflicts, it creates a new branch to resolve the conflicts and opens a pull request.
-
-# **Note**: The `github-script` action is used to interact with the GitHub API, so you may need to install any dependencies or adjust the script accordingly based on your environment.
+          gh auth login --with-token <<< "$GH_TOKEN"
+          echo $BASE_BRANCH
+          gh repo sync adskyiproger/poc-core-test-my --branch main
+          gh auth logout":
