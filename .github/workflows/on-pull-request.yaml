@@ -52,13 +52,15 @@ jobs:
           echo "BASE_BRANCH: $BASE_BRANCH"
           git checkout $BASE_BRANCH
           git pull origin $BASE_BRANCH
-          git merge bar/$BASE_BRANCH --allow-unrelated-histories || \
+          git merge -m 'Merge pull request' --allow-unrelated-histories bar/$BASE_BRANCH || \
           (git merge --abort && echo "Merge conflict detected. Creating pull request.")
           git status
 
       - name: Pull latest changes from bar before pushing
         if: env.branch_exists == 'true' && !failure()
         run: |
+          git status
+          echo "========================"
           BASE_BRANCH=${{ github.event.pull_request.base.ref }}
           git pull --rebase bar $BASE_BRANCH || git status
           git status
