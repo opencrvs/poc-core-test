@@ -30,6 +30,5 @@ jobs:
           GH_TOKEN: ${{ secrets.MY_TOKEN }}
         run: |
           BASE_BRANCH=${{ github.event.pull_request.base.ref }}
-          gh auth login
           gh repo sync adskyiproger/poc-core-test-my --branch ${BASE_BRANCH}
-          gh auth logout
+
