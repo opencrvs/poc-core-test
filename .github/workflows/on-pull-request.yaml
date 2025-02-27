@@ -47,7 +47,8 @@ jobs:
         run: |
           set -x
           echo "The 'sync_fork' step failed. Creating a PR in ${SYNC_FORK_REPOSITORY_PATH}"
-          gh pr create \
+
+          if gh pr create \
             --repo ${FORK_REPOSITORY_PATH} \
             --base ${BASE_BRANCH} \
             --head opencrvs:${BASE_BRANCH} \
@@ -56,11 +57,12 @@ jobs:
           """
           This PR updates the ${BASE_BRANCH} branch with the latest changes from
           the original repository opencrvs:${BASE_BRANCH}.
-          """ 1>result.txt 2>&1; _res=$?
-          if [ $? -eq 0 ]; then
-            printf "PR created successfully: $(grep ${FORK_REPOSITORY_PATH} result.txt)\n"
+          """ 1>result.txt 2>&1; then
+              printf "PR created successfully: $(grep ${FORK_REPOSITORY_PATH} result.txt)\n"
           else
-            grep ${FORK_REPOSITORY_PATH} result.txt 1>/dev/null &&\
-              printf "PR already exists: $(grep ${FORK_REPOSITORY_PATH} result.txt)\n" ||\
-            echo "Failed to create PR"
+              if grep -q "A pull request already exists" result.txt; then
+                  printf "PR already exists: $(grep ${FORK_REPOSITORY_PATH} result.txt)\n"
+              else
+                  echo "Failed to create PR: $(cat result.txt)"
+              fi
           fi
