@@ -78,7 +78,7 @@ jobs:
               FORK_STATUS="❌ Failed to create PR in Farajaland repository: $RESULT"
           BODY="""
           Pull request https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
-          authored by ${{ github.actor }} from branch `${{ github.head_ref }}` was merged into `${BASE_BRANCH}`.
+          authored by ${{ github.actor }} from branch **${{ github.head_ref }}** was merged into **${BASE_BRANCH}**.
 
           $FORK_STATUS
           """
