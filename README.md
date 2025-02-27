@@ -22,3 +22,5 @@ Added dummy text
 And few more lines
 
 Lets test again
+
+After this line we should receive a conflict
