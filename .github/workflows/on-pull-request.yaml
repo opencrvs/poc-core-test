@@ -55,8 +55,8 @@ jobs:
           """
           This PR updates the ${BASE_BRANCH} branch with the latest changes from
           the original repository opencrvs:${BASE_BRANCH}.
-          """ 1>result.txt 2>&1; _res=$?
-          if [ $? -eq 0 ]; then
+          """ 1>result.txt 2>&1; _res=$? || true
+          if [ $_res -eq 0 ]; then
             printf "PR created successfully: $(grep ${FORK_REPOSITORY_PATH} result.txt)\n"
           else
             grep ${FORK_REPOSITORY_PATH} result.txt 1>/dev/null &&\
