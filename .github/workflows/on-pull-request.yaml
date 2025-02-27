@@ -40,9 +40,14 @@ jobs:
         with:
           repository: ${{ secrets.FORK_REPOSITORY_ORGANISATION }}/${{ secrets.FORK_REPOSITORY_NAME }}
 
+          # TODO: replace https://github.com/opencrvs/poc-core-test.git with git variable
+      - run: |
+          git remote add upstream https://github.com/opencrvs/poc-core-test.git
+          git fetch upstream ${{ github.event.pull_request.base.ref }}
       - name: Create Pull Request
         if: steps.sync_fork.outcome == 'failure'
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.FORK_ORGANISATION_TOKEN }}
-          branch: ${{ github.event.pull_request.base.ref }}
+          base: ${{ github.event.pull_request.base.ref }}
+          branch: opencrvs:${{ github.event.pull_request.base.ref }}
