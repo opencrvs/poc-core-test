@@ -61,7 +61,7 @@ jobs:
               if grep -q "already exists" result.txt; then
                   printf "PR already exists in Farajaland repo: $(grep ${FORK_REPOSITORY_PATH} result.txt)\n"
                   echo RESULT=$(grep ${FORK_REPOSITORY_PATH} result.txt) >> $GITHUB_ENV
-                  echo STATUS="Exists" >> $GITHUB_ENV
+                  echo STATUS="Created" >> $GITHUB_ENV
               else
                   echo "Failed to create PR: $(cat result.txt)"
                   echo RESULT=$(cat result.txt) >> $GITHUB_ENV
@@ -71,11 +71,9 @@ jobs:
       - name: Send slack notification
         run: |
           [ "x$STATUS" == "xSynced" ] && \
-              FORK_STATUS="✅ Changes synced with Farajaland repository https://github.com/${FORK_REPOSITORY_PATH}"
+              FORK_STATUS="✅ Changes synced with Farajaland repo https://github.com/${FORK_REPOSITORY_PATH}"
           [ "x$STATUS" == "xCreated" ] && \
-              FORK_STATUS="⚠️ PR $RESULT created in Farajaland repository, please resolve merge conflicts on PR to keep Farajaland in sync Countryconfig"
-          [ "x$STATUS" == "xExists" ] && \
-              FORK_STATUS="⚠️ PR $RESULT already exists in Farajaland repository, please resolve merge conflicts on PR to keep Farajaland in sync Countryconfig"
+              FORK_STATUS="⚠️ Changes was not synced with Farajaland repo due to merge conflicts, please merge PR $RESULT manually to keep Farajaland in sync Countryconfig"
           [ "x$STATUS" == "xFailed" ] && \
               FORK_STATUS="❌ Failed to create PR in Farajaland repository: $RESULT"
           BODY="""
