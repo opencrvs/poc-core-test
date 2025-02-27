@@ -34,12 +34,12 @@ jobs:
             echo "branch_exists=false" >> $GITHUB_ENV
           fi
 
-      # - name: Sync Farajaland Forkrepository
-      #   id: sync_fork
-      #   if: env.branch_exists == 'true'
-      #   continue-on-error: true
-      #   run: |
-      #     gh repo sync ${FORK_REPOSITORY_PATH} --branch ${BASE_BRANCH}
+      - name: Sync Farajaland Forkrepository
+        id: sync_fork
+        if: env.branch_exists == 'true'
+        continue-on-error: true
+        run: |
+          gh repo sync ${FORK_REPOSITORY_PATH} --branch ${BASE_BRANCH}
       # - name: Create Pull Request
       #   id: cpr
       #   uses: peter-evans/create-pull-request@v7
