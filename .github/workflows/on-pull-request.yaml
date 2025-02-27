@@ -38,6 +38,7 @@ jobs:
         continue-on-error: true
         run: |
           gh repo sync ${FORK_REPOSITORY_PATH} --branch ${BASE_BRANCH}
+          echo STATUS="Synced" >> $GITHUB_ENV
 
       - name: Create PR in ${{ secrets.FORK_REPOSITORY_ORGANISATION }}/${{ secrets.FORK_REPOSITORY_NAME }}
         if: steps.sync_fork.outcome == 'failure'
@@ -68,14 +69,22 @@ jobs:
               fi
           fi
       - name: Send slack notification
-        if: steps.sync_fork.outcome == 'failure'
         run: |
-          PR_NUMBER=${{ github.event.pull_request.number }}
-          echo "Local something with PR number $PR_NUMBER"
-          echo "REPO_URL: https://github.com/${{ github.repository }}"
-          echo "PR branch: ${{ github.head_ref }}"
-          echo "RESULT: $RESULT"
-          echo "STATUS: $STATUS"
+          [ "x$STATUS" == "xSynced" ] && \
+              FORK_STATUS="✅ Changes synced with Farajaland repository https://github.com/${FORK_REPOSITORY_PATH}"
+          [ "x$STATUS" == "xCreated" ] && \
+              FORK_STATUS="⚠️ PR $RESULT created in Farajaland repository due to merge conflicts, please resolve conflicts and merge to keep the repo in sync with upstream"
+          [ "x$STATUS" == "xExists" ] && \
+              FORK_STATUS="⚠️ PR $RESULT already exists in Farajaland repository, please resolve conflicts and merge to keep the repo in sync with upstream"
+          [ "x$STATUS" == "xFailed" ] && \
+              FORK_STATUS="❌ Failed to create PR in Farajaland repository: $RESULT"
+          BODY="""
+          Pull request https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
+          authored by ${{ github.actor }} from branch ${{ github.head_ref }}" was merged into ${BASE_BRANCH}.
+
+          $FORK_STATUS
+          """
+          echo "$BODY"
       # - name: Slack Notification
       #   if: steps.sync_fork.outcome == 'failure'
       #   run: |
