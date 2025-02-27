@@ -12,9 +12,9 @@ jobs:
     env:
       BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
       GH_TOKEN: ${{ secrets.FORK_ORGANISATION_TOKEN }}
-      FORK_ORGANISATION: ${{ env.FORK_REPOSITORY_ORGANISATION }}
-      FORK_REPOSITORY_NAME: ${{ env.FORK_REPOSITORY_NAME }}
-      FORK_REPOSITORY_PATH: "${{ env.FORK_REPOSITORY_ORGANISATION }}/${{ env.FORK_REPOSITORY_NAME }}"
+      FORK_ORGANISATION: ${{ secrets.FORK_REPOSITORY_ORGANISATION }}
+      FORK_REPOSITORY_NAME: ${{ secrets.FORK_REPOSITORY_NAME }}
+      FORK_REPOSITORY_PATH: "${{ secrets.FORK_REPOSITORY_ORGANISATION }}/${{ secrets.FORK_REPOSITORY_NAME }}"
     steps:
       - name: Checkout OpenCRVS Countryconfig repository
         uses: actions/checkout@v4
@@ -41,7 +41,7 @@ jobs:
         run: |
           gh repo sync ${FORK_REPOSITORY_PATH} --branch ${BASE_BRANCH}
 
-      - name: Create PR in ${{ env.FORK_REPOSITORY_PATH }}
+      - name: Create PR in ${{ secrets.FORK_REPOSITORY_ORGANISATION }}/${{ secrets.FORK_REPOSITORY_NAME }}
         if: steps.sync_fork.outcome == 'failure'
         run: |
           echo "The 'sync_fork' step failed. Creating a PR in ${SYNC_FORK_REPOSITORY_PATH}"
