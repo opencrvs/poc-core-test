@@ -91,5 +91,5 @@ jobs:
           -H 'Content-type: application/json' \
           --data "{
             'channel': 'C02LU432JGK',
-            text': '$BODY'
+            'text': '$BODY'
           }"
