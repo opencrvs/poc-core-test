@@ -12,8 +12,6 @@ jobs:
     env:
       BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
       GH_TOKEN: ${{ secrets.FORK_ORGANISATION_TOKEN }}
-      FORK_ORGANISATION: ${{ secrets.FORK_REPOSITORY_ORGANISATION }}
-      FORK_REPOSITORY_NAME: ${{ secrets.FORK_REPOSITORY_NAME }}
       FORK_REPOSITORY_PATH: "${{ secrets.FORK_REPOSITORY_ORGANISATION }}/${{ secrets.FORK_REPOSITORY_NAME }}"
     steps:
       - name: Checkout OpenCRVS Countryconfig repository
@@ -45,9 +43,7 @@ jobs:
         if: steps.sync_fork.outcome == 'failure'
         continue-on-error: true
         run: |
-          set -x
           echo "The 'sync_fork' step failed. Creating a PR in ${SYNC_FORK_REPOSITORY_PATH}"
-
           if gh pr create \
             --repo ${FORK_REPOSITORY_PATH} \
             --base ${BASE_BRANCH} \
@@ -61,8 +57,19 @@ jobs:
               printf "PR created successfully: $(grep ${FORK_REPOSITORY_PATH} result.txt)\n"
           else
               if grep -q "already exists" result.txt; then
-                  printf "PR already exists: $(grep ${FORK_REPOSITORY_PATH} result.txt)\n"
+                  printf "PR already exists in Farajaland repo: $(grep ${FORK_REPOSITORY_PATH} result.txt)\n"
               else
                   echo "Failed to create PR: $(cat result.txt)"
               fi
           fi
+      - name: Slack Notification
+        if: steps.sync_fork.outcome == 'failure'
+        run: |
+          echo "Sending slack notification"
+          curl -X POST https://slack.com/api/chat.postMessage \
+          -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" \
+          -H 'Content-type: application/json' \
+          --data '{
+            "channel": "C07M2FETFFB",
+            "text": "Hello, world!"
+          }'
