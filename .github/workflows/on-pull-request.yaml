@@ -52,7 +52,7 @@ jobs:
             --body \
           """
           This PR updates the ${BASE_BRANCH} branch with the latest changes from
-          the original repository opencrvs:${BASE_BRANCH}.
+          the original repository https://github.com/${{ github.repository }}.
           """ 1>result.txt 2>&1; then
               printf "PR created successfully: $(grep ${FORK_REPOSITORY_PATH} result.txt)\n"
               echo RESULT=$(grep ${FORK_REPOSITORY_PATH} result.txt) >> $GITHUB_ENV
