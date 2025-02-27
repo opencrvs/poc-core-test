@@ -1,4 +1,4 @@
-name: Sync Changes to Fork
+name: Sync Changes to Farajaland
 
 on:
   pull_request:
@@ -6,39 +6,88 @@ on:
       - closed
 
 jobs:
-  sync_fork:
+  sync_farajaland:
     if: ${{ github.event.pull_request.merged == true }}
     runs-on: ubuntu-latest
-
+    env:
+      BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+      GH_TOKEN: ${{ secrets.FORK_ORGANISATION_TOKEN }}
+      FORK_REPOSITORY_PATH: "${{ secrets.FORK_REPOSITORY_ORGANISATION }}/${{ secrets.FORK_REPOSITORY_NAME }}"
     steps:
-      - name: Checkout foo repository
+      - name: Checkout OpenCRVS Countryconfig repository
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.base.ref }}
 
-      - name: Check if PR branch exists in bar repository
+      - name: Check if PR branch exists in Farajaland repository
         id: check_branch
         run: |
-          BASE_BRANCH=${{ github.event.pull_request.base.ref }}
-          if git ls-remote --heads https://${{ secrets.MY_TOKEN }}@github.com/adskyiproger/poc-core-test-my.git "$BASE_BRANCH" | grep "$BASE_BRANCH"; then
+          if git ls-remote --heads https://${GH_TOKEN}@github.com/${FORK_REPOSITORY_PATH}.git "$BASE_BRANCH" | grep "$BASE_BRANCH"; then
             echo "branch_exists=true" >> $GITHUB_ENV
           else
             echo "=============================================="
-            echo " 🚀 Branch $BASE_BRANCH doesn't exist in repository adskyiproger/poc-core-test-my"
+            echo " 🚀 Branch $BASE_BRANCH doesn't exist in repository ${FORK_REPOSITORY_PATH}"
             echo " 🚪 Doing exit"
             echo "=============================================="
             echo "branch_exists=false" >> $GITHUB_ENV
           fi
 
-      - name: Sync Fork
+      - name: Sync Farajaland Fork repository
         id: sync_fork
         if: env.branch_exists == 'true'
-        env:
-          GH_TOKEN: ${{ secrets.MY_TOKEN }}
+        continue-on-error: true
         run: |
-          BASE_BRANCH=${{ github.event.pull_request.base.ref }}
-          gh repo sync adskyiproger/poc-core-test-my --branch ${BASE_BRANCH}
+          gh repo sync ${FORK_REPOSITORY_PATH} --branch ${BASE_BRANCH}
+          echo STATUS="Synced" >> $GITHUB_ENV
 
-      - name: Create PR in adskyiproger/poc-core-test-my
+      - name: Create PR in ${{ secrets.FORK_REPOSITORY_ORGANISATION }}/${{ secrets.FORK_REPOSITORY_NAME }}
         if: steps.sync_fork.outcome == 'failure'
-        run: echo "The 'sync_fork' step failed explicitly. Creating a PR in adskyiproger/poc-core-test-my"
+        run: |
+          echo "The 'sync_fork' step failed. Creating a PR in ${SYNC_FORK_REPOSITORY_PATH}"
+          if gh pr create \
+            --repo ${FORK_REPOSITORY_PATH} \
+            --base ${BASE_BRANCH} \
+            --head opencrvs:${BASE_BRANCH} \
+            --title "Update Farajaland from ${BASE_BRANCH}" \
+            --body \
+          """
+          This PR updates the ${BASE_BRANCH} branch with the latest changes from
+          the original repository opencrvs:${BASE_BRANCH}.
+          """ 1>result.txt 2>&1; then
+              printf "PR created successfully: $(grep ${FORK_REPOSITORY_PATH} result.txt)\n"
+              echo RESULT=$(grep ${FORK_REPOSITORY_PATH} result.txt) >> $GITHUB_ENV
+              echo STATUS="Created" >> $GITHUB_ENV
+          else
+              if grep -q "already exists" result.txt; then
+                  printf "PR already exists in Farajaland repo: $(grep ${FORK_REPOSITORY_PATH} result.txt)\n"
+                  echo RESULT=$(grep ${FORK_REPOSITORY_PATH} result.txt) >> $GITHUB_ENV
+                  echo STATUS="Created" >> $GITHUB_ENV
+              else
+                  echo "Failed to create PR: $(cat result.txt)"
+                  echo RESULT=$(cat result.txt) >> $GITHUB_ENV
+                  echo STATUS="Failed" >> $GITHUB_ENV
+              fi
+          fi
+      - name: Send slack notification
+        run: |
+          [ "x$STATUS" == "xSynced" ] && \
+              FORK_STATUS="✅ Changes synced with Farajaland repo https://github.com/${FORK_REPOSITORY_PATH}"
+          [ "x$STATUS" == "xCreated" ] && \
+              FORK_STATUS="⚠️ Changes was not synced with Farajaland repo due to merge conflicts, please merge PR $RESULT manually to keep Farajaland in sync Countryconfig"
+          [ "x$STATUS" == "xFailed" ] && \
+              FORK_STATUS="❌ Failed to create PR in Farajaland repository: $RESULT"
+          BODY="""
+          Pull request https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
+          authored by ${{ github.actor }} from branch ${{ github.head_ref }} was merged into ${BASE_BRANCH}.
+
+          $FORK_STATUS
+          """
+          echo "$BODY"
+
+          curl -X POST https://slack.com/api/chat.postMessage \
+          -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" \
+          -H 'Content-type: application/json' \
+          --data "{
+            'channel': 'C02LU432JGK',
+            'text': '$BODY'
+          }"

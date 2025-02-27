@@ -9,6 +9,10 @@ Adding line
 
 One more line
 
-Two more lines
-
 One more line
+
+Once more line should fail
+
+# header
+
+Added dummy text
