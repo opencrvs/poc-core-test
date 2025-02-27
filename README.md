@@ -13,6 +13,10 @@ One more line
 
 Once more line should fail
 
+# Added something here
+
+New line
+
 # header
 
 Added dummy text
