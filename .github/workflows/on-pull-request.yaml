@@ -54,24 +54,27 @@ jobs:
           the original repository opencrvs:${BASE_BRANCH}.
           """ 1>result.txt 2>&1; then
               printf "PR created successfully: $(grep ${FORK_REPOSITORY_PATH} result.txt)\n"
-              echo PR=$(grep ${FORK_REPOSITORY_PATH} result.txt) >> $GITHUB_ENV
+              echo RESULT=$(grep ${FORK_REPOSITORY_PATH} result.txt) >> $GITHUB_ENV
               echo STATUS="Created" >> $GITHUB_ENV
           else
               if grep -q "already exists" result.txt; then
                   printf "PR already exists in Farajaland repo: $(grep ${FORK_REPOSITORY_PATH} result.txt)\n"
-                  echo PR=$(grep ${FORK_REPOSITORY_PATH} result.txt) >> $GITHUB_ENV
+                  echo RESULT=$(grep ${FORK_REPOSITORY_PATH} result.txt) >> $GITHUB_ENV
                   echo STATUS="Exists" >> $GITHUB_ENV
               else
                   echo "Failed to create PR: $(cat result.txt)"
-                  echo PR=$(cat result.txt) >> $GITHUB_ENV
+                  echo RESULT=$(cat result.txt) >> $GITHUB_ENV
                   echo STATUS="Failed" >> $GITHUB_ENV
               fi
           fi
-      - name: Use pull request number in a script
+      - name: Send slack notification
+        if: steps.sync_fork.outcome == 'failure'
         run: |
           PR_NUMBER=${{ github.event.pull_request.number }}
           echo "Local something with PR number $PR_NUMBER"
-          echo "PR: $PR"
+          echo "REPO_URL: https://github.com/${{ github.repository }}"
+          echo "PR branch: ${{ github.head_ref }}"
+          echo "RESULT: $RESULT"
           echo "STATUS: $STATUS"
       # - name: Slack Notification
       #   if: steps.sync_fork.outcome == 'failure'
