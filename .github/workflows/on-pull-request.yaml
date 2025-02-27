@@ -1,4 +1,4 @@
-name: Sync Changes to Fork
+name: Sync Changes to Farajaland
 
 on:
   pull_request:
@@ -6,40 +6,52 @@ on:
       - closed
 
 jobs:
-  sync_fork:
+  sync_farajaland:
     if: ${{ github.event.pull_request.merged == true }}
     runs-on: ubuntu-latest
-
+    env:
+      BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+      GH_TOKEN: ${{ secrets.FORK_ORGANISATION_TOKEN }}
+      FORK_ORGANISATION: ${{ env.FORK_REPOSITORY_ORGANISATION }}
+      FORK_REPOSITORY_NAME: ${{ env.FORK_REPOSITORY_NAME }}
+      FORK_REPOSITORY_PATH: "${{ env.FORK_REPOSITORY_ORGANISATION }}/${{ env.FORK_REPOSITORY_NAME }}"
     steps:
-      - name: Checkout foo repository
+      - name: Checkout OpenCRVS Countryconfig repository
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.base.ref }}
 
-      - name: Check if PR branch exists in bar repository
+      - name: Check if PR branch exists in Farajaland repository
         id: check_branch
         run: |
-          BASE_BRANCH=${{ github.event.pull_request.base.ref }}
-          if git ls-remote --heads https://${{ secrets.MY_TOKEN }}@github.com/adskyiproger/poc-core-test-my.git "$BASE_BRANCH" | grep "$BASE_BRANCH"; then
+          if git ls-remote --heads https://${GH_TOKEN}@github.com/${FORK_REPOSITORY_PATH}.git "$BASE_BRANCH" | grep "$BASE_BRANCH"; then
             echo "branch_exists=true" >> $GITHUB_ENV
           else
             echo "=============================================="
-            echo " 🚀 Branch $BASE_BRANCH doesn't exist in repository adskyiproger/poc-core-test-my"
+            echo " 🚀 Branch $BASE_BRANCH doesn't exist in repository ${FORK_REPOSITORY_PATH}"
             echo " 🚪 Doing exit"
             echo "=============================================="
             echo "branch_exists=false" >> $GITHUB_ENV
           fi
 
-      - name: Sync Fork
+      - name: Sync Farajaland Forkrepository
         id: sync_fork
         if: env.branch_exists == 'true'
         continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.MY_TOKEN }}
         run: |
-          BASE_BRANCH=${{ github.event.pull_request.base.ref }}
-          gh repo sync adskyiproger/poc-core-test-my --branch ${BASE_BRANCH}
+          gh repo sync ${FORK_REPOSITORY_PATH} --branch ${BASE_BRANCH}
 
-      - name: Create PR in adskyiproger/poc-core-test-my
+      - name: Create PR in ${{ env.FORK_REPOSITORY_PATH }}
         if: steps.sync_fork.outcome == 'failure'
-        run: echo "The 'sync_fork' step failed explicitly. Creating a PR in adskyiproger/poc-core-test-my"
+        run: |
+          echo "The 'sync_fork' step failed. Creating a PR in ${SYNC_FORK_REPOSITORY_PATH}"
+          gh pr create \
+            --repo ${FORK_REPOSITORY_PATH} \
+            --base ${BASE_BRANCH} \
+            --head opencrvs:${BASE_BRANCH} \
+            --title "Update Farajaland from ${BASE_BRANCH}" \
+            --body \
+          """
+          This PR updates the ${BASE_BRANCH} branch with the latest changes from
+          the original repository opencrvs:${BASE_BRANCH}.
+          """
