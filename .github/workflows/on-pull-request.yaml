@@ -49,5 +49,4 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.FORK_ORGANISATION_TOKEN }}
-          base: ${{ github.event.pull_request.base.ref }}
-          branch: opencrvs:${{ github.event.pull_request.base.ref }}
+          branch: upstream-changes
