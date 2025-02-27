@@ -41,7 +41,6 @@ jobs:
 
       - name: Create PR in ${{ secrets.FORK_REPOSITORY_ORGANISATION }}/${{ secrets.FORK_REPOSITORY_NAME }}
         if: steps.sync_fork.outcome == 'failure'
-        continue-on-error: true
         run: |
           echo "The 'sync_fork' step failed. Creating a PR in ${SYNC_FORK_REPOSITORY_PATH}"
           if gh pr create \
@@ -55,21 +54,33 @@ jobs:
           the original repository opencrvs:${BASE_BRANCH}.
           """ 1>result.txt 2>&1; then
               printf "PR created successfully: $(grep ${FORK_REPOSITORY_PATH} result.txt)\n"
+              echo PR=$(grep ${FORK_REPOSITORY_PATH} result.txt) >> $GITHUB_ENV
+              echo STATUS="Created" >> $GITHUB_ENV
           else
               if grep -q "already exists" result.txt; then
                   printf "PR already exists in Farajaland repo: $(grep ${FORK_REPOSITORY_PATH} result.txt)\n"
+                  echo PR=$(grep ${FORK_REPOSITORY_PATH} result.txt) >> $GITHUB_ENV
+                  echo STATUS="Exists" >> $GITHUB_ENV
               else
                   echo "Failed to create PR: $(cat result.txt)"
+                  echo PR=$(cat result.txt) >> $GITHUB_ENV
+                  echo STATUS="Failed" >> $GITHUB_ENV
               fi
           fi
-      - name: Slack Notification
-        if: steps.sync_fork.outcome == 'failure'
+      - name: Use pull request number in a script
         run: |
-          echo "Sending slack notification"
-          curl -X POST https://slack.com/api/chat.postMessage \
-          -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" \
-          -H 'Content-type: application/json' \
-          --data '{
-            "channel": "C02LU432JGK",
-            "text": "Hello, world!"
-          }'
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          echo "Local something with PR number $PR_NUMBER"
+          echo "PR: $PR"
+          echo "STATUS: $STATUS"
+      # - name: Slack Notification
+      #   if: steps.sync_fork.outcome == 'failure'
+      #   run: |
+      #     echo "Sending slack notification"
+      #     curl -X POST https://slack.com/api/chat.postMessage \
+      #     -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" \
+      #     -H 'Content-type: application/json' \
+      #     --data '{
+      #       "channel": "C02LU432JGK",
+      #       "text": "Hello, world!"
+      #     }'
