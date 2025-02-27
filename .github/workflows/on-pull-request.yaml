@@ -60,7 +60,7 @@ jobs:
           """ 1>result.txt 2>&1; then
               printf "PR created successfully: $(grep ${FORK_REPOSITORY_PATH} result.txt)\n"
           else
-              if grep -q "A pull request already exists" result.txt; then
+              if grep -q "already exists" result.txt; then
                   printf "PR already exists: $(grep ${FORK_REPOSITORY_PATH} result.txt)\n"
               else
                   echo "Failed to create PR: $(cat result.txt)"
