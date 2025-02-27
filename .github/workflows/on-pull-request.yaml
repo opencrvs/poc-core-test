@@ -34,7 +34,7 @@ jobs:
             echo "branch_exists=false" >> $GITHUB_ENV
           fi
 
-      - name: Sync Farajaland Forkrepository
+      - name: Sync Farajaland Fork repository
         id: sync_fork
         if: env.branch_exists == 'true'
         continue-on-error: true
