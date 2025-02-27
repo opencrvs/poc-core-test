@@ -89,7 +89,7 @@ jobs:
           curl -v -X POST https://slack.com/api/chat.postMessage \
           -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" \
           -H 'Content-type: application/json' \
-          --data '{
-            "channel": "C02LU432JGK",
-            "text": "$BODY"
-          }'
+          --data "{
+            'channel': 'C02LU432JGK',
+            text': '$BODY'
+          }"
