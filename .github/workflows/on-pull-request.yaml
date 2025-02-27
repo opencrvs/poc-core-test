@@ -84,6 +84,7 @@ jobs:
 
           $FORK_STATUS
           """
+          echo "$BODY"
       # - name: Slack Notification
       #   if: steps.sync_fork.outcome == 'failure'
       #   run: |
