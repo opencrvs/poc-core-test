@@ -71,17 +71,17 @@ jobs:
       - name: Send slack notification
         run: |
           [ "x$STATUS" == "xSynced" ] && \
-              FORK_STATUS="Changes synced with Farajaland repository https://github.com/${FORK_REPOSITORY_PATH}"
+              FORK_STATUS="✅ Changes synced with Farajaland repository https://github.com/${FORK_REPOSITORY_PATH}"
           [ "x$STATUS" == "xCreated" ] && \
-              FORK_STATUS="PR $RESULT created in Farajaland repository due to merge conflicts, please resolve conflicts and merge PR"
+              FORK_STATUS="⚠️ PR $RESULT created in Farajaland repository due to merge conflicts, please resolve conflicts and merge to keep the repo in sync with upstream"
           [ "x$STATUS" == "xExists" ] && \
-              FORK_STATUS="PR $RESULT already exists in Farajaland repository, please resolve conflicts and merge PR"
+              FORK_STATUS="⚠️ PR $RESULT already exists in Farajaland repository, please resolve conflicts and merge to keep the repo in sync with upstream"
           [ "x$STATUS" == "xFailed" ] && \
-              FORK_STATUS="Failed to create PR in Farajaland repository: $RESULT"
+              FORK_STATUS="❌ Failed to create PR in Farajaland repository: $RESULT"
           BODY="""
           Pull request https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
           authored by ${{ github.actor }} from branch ${{ github.head_ref }}" was merged into ${BASE_BRANCH}.
-          
+
           $FORK_STATUS
           """
       # - name: Slack Notification
