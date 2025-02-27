@@ -73,9 +73,9 @@ jobs:
           [ "x$STATUS" == "xSynced" ] && \
               FORK_STATUS="✅ Changes synced with Farajaland repository https://github.com/${FORK_REPOSITORY_PATH}"
           [ "x$STATUS" == "xCreated" ] && \
-              FORK_STATUS="⚠️ PR $RESULT created in Farajaland repository due to merge conflicts, please resolve conflicts and merge to keep the repo in sync with upstream"
+              FORK_STATUS="⚠️ PR $RESULT created in Farajaland repository, please resolve merge conflicts on PR to keep Farajaland in sync Countryconfig"
           [ "x$STATUS" == "xExists" ] && \
-              FORK_STATUS="⚠️ PR $RESULT already exists in Farajaland repository, please resolve conflicts and merge to keep the repo in sync with upstream"
+              FORK_STATUS="⚠️ PR $RESULT already exists in Farajaland repository, please resolve merge conflicts on PR to keep Farajaland in sync Countryconfig"
           [ "x$STATUS" == "xFailed" ] && \
               FORK_STATUS="❌ Failed to create PR in Farajaland repository: $RESULT"
           BODY="""
@@ -85,14 +85,11 @@ jobs:
           $FORK_STATUS
           """
           echo "$BODY"
-      # - name: Slack Notification
-      #   if: steps.sync_fork.outcome == 'failure'
-      #   run: |
-      #     echo "Sending slack notification"
-      #     curl -X POST https://slack.com/api/chat.postMessage \
-      #     -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" \
-      #     -H 'Content-type: application/json' \
-      #     --data '{
-      #       "channel": "C02LU432JGK",
-      #       "text": "Hello, world!"
-      #     }'
+
+          curl -X POST https://slack.com/api/chat.postMessage \
+          -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" \
+          -H 'Content-type: application/json' \
+          --data '{
+            "channel": "C02LU432JGK",
+            "text": $BODY
+          }'
