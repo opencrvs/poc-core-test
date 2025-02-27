@@ -70,6 +70,6 @@ jobs:
           -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" \
           -H 'Content-type: application/json' \
           --data '{
-            "channel": "C07M2FETFFB",
+            "channel": "C02LU432JGK",
             "text": "Hello, world!"
           }'
