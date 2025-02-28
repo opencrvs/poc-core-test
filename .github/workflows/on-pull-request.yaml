@@ -93,9 +93,7 @@ jobs:
           git remote -v
       - name: Push Branch
         run: |
-          git remote remove origin
-          git remote add origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/opencrvs/poc-core-test-my.git
-          git push origin sync-with-upstream
+          git push https://x-access-token:${GH_TOKEN}@github.com/${FORK_REPOSITORY_PATH}.git sync-with-${BASE_BRANCH}
     
       - name: Create PR in ${{ secrets.FORK_REPOSITORY_ORGANISATION }}/${{ secrets.FORK_REPOSITORY_NAME }}
         if: steps.sync_fork.outcome == 'failure'
