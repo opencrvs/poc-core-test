@@ -93,7 +93,7 @@ jobs:
           echo "Checkout base branch"
           git checkout -b sync-with-${BASE_BRANCH}
           echo "Merge upstream/${BASE_BRANCH}"
-          git merge upstream/${BASE_BRANCH}
+          git merge upstream/${BASE_BRANCH} || true
           echo "Check status after merge"
           git status
           echo "Add all changes including conflicts"
