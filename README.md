@@ -13,10 +13,7 @@ One more line
 
 Once more line should fail
 
-
-# header
-
-Added dummy text
+Let go without header
 
 # Few more lines
 
