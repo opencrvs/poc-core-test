@@ -68,7 +68,13 @@ jobs:
           fetch-depth: 0
           repository: '${{ secrets.FORK_REPOSITORY_ORGANISATION }}/${{ secrets.FORK_REPOSITORY_NAME }}'
           path: '${{ secrets.FORK_REPOSITORY_NAME }}'
-      - run: |
+      - if: steps.sync_fork.outcome == 'failure'
+        name: Set up Git
+        run: |
+          git config --global user.email "you@example.com"
+          git config --global user.name "Your Name"
+      - if: steps.sync_fork.outcome == 'failure'
+        run: |
           pwd
           echo "Check: .."
           ls -la ..
