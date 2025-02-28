@@ -80,6 +80,8 @@ jobs:
       - name: Set up authentication
         run: git config --global url."https://${{ secrets.FORK_ORGANISATION_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
       - run: |
+          git config -l | grep 'http\..*\.extraheader' | cut -d= -f1 | \
+              xargs -L1 git config --unset-all
           echo Hello >> README.md
           git add README.md
           git commit -m "Add README"
@@ -104,8 +106,6 @@ jobs:
           git remote -v
       - name: Push Branch
         run: |
-          git config -l | grep 'http\..*\.extraheader' | cut -d= -f1 | \
-              xargs -L1 git config --unset-all
           git push https://x-access-token:${{ secrets.FORK_ORGANISATION_TOKEN }}@github.com/${FORK_REPOSITORY_PATH}.git sync-with-${BASE_BRANCH} ||\
           git push https://x-access-token:${GH_TOKEN}@github.com/${FORK_REPOSITORY_PATH}.git sync-with-${BASE_BRANCH}
 
