@@ -35,7 +35,6 @@ jobs:
     env:
       UPSTREAM_REPOSITORY: ${{ github.repository }}
       BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
-      BASE_REPOSITORY: ${{ github.repository }}
       # Check token under Olli's account
       GH_TOKEN: ${{ secrets.FORK_ORGANISATION_TOKEN }}
       FORK_REPOSITORY_PATH: "${{ secrets.FORK_REPOSITORY_ORGANISATION }}/${{ secrets.FORK_REPOSITORY_NAME }}"
@@ -93,7 +92,7 @@ jobs:
           git remote -v
       - name: Push Branch
         run: |
-          git push https://x-access-token:${GH_TOKEN}@github.com/${FORK_REPOSITORY_PATH}.git sync-with-${BASE_BRANCH}
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${FORK_REPOSITORY_PATH}.git sync-with-${BASE_BRANCH}
     
       - name: Create PR in ${{ secrets.FORK_REPOSITORY_ORGANISATION }}/${{ secrets.FORK_REPOSITORY_NAME }}
         if: steps.sync_fork.outcome == 'failure'
