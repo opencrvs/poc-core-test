@@ -93,7 +93,7 @@ jobs:
           git remote -v
       - name: Push Branch
         run: |
-          git remote remote origin
+          git remote remove origin
           git remote add origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/opencrvs/poc-core-test-my.git
           git push origin sync-with-upstream
     
