@@ -71,14 +71,12 @@ jobs:
         with:
           fetch-depth: 0
           repository: '${{ vars.FORK_REPOSITORY_ORGANISATION }}/${{ vars.FORK_REPOSITORY_NAME }}'
-          # path: '${{ env.FORK_REPOSITORY_NAME }}'
       - if: steps.sync_fork.outcome == 'failure'
         name: Set up Git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-      - name: Set up authentication
-        run: |
+          git config pull.rebase true
           git config --global url."https://${{ secrets.FORK_ORGANISATION_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
           git config -l | grep 'http\..*\.extraheader' | cut -d= -f1 | \
               xargs -L1 git config --unset-all
