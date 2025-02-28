@@ -74,6 +74,10 @@ jobs:
           path: '${{ secrets.FORK_REPOSITORY_NAME }}'
       - run: |
           pwd
+          echo "Check: .."
           ls -la ..
+          echo "Check: ."
           ls -la
+          echo "Check: ${{ secrets.FORK_REPOSITORY_NAME }}"
+          ls -la ${{ secrets.FORK_REPOSITORY_NAME }}
           env
