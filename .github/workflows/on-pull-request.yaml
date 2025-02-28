@@ -131,5 +131,27 @@ jobs:
                   echo STATUS="Failed" >> $GITHUB_ENV
               fi
           fi
-          echo $RESULT
-          echo $STATUS
+
+      - name: Send slack notification
+        run: |
+          [ "x$STATUS" == "xSynced" ] && \
+              FORK_STATUS="✅ Changes synced with Farajaland repo https://github.com/${FORK_REPOSITORY_PATH}"
+          [ "x$STATUS" == "xCreated" ] && \
+              FORK_STATUS="⚠️ Changes was not synced with Farajaland repo due to merge conflicts, please merge PR $RESULT manually to keep Farajaland in sync Countryconfig"
+          [ "x$STATUS" == "xFailed" ] && \
+              FORK_STATUS="❌ Failed to create PR in Farajaland repository: $RESULT"
+          BODY="""
+          Pull request https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
+          authored by ${{ github.actor }} from branch ${{ github.head_ref }} was merged into ${BASE_BRANCH}.
+
+          $FORK_STATUS
+          """
+          echo "$BODY"
+
+          # curl -X POST https://slack.com/api/chat.postMessage \
+          # -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" \
+          # -H 'Content-type: application/json' \
+          # --data "{
+          #   'channel': 'C02LU432JGK',
+          #   'text': '$BODY'
+          # }"
