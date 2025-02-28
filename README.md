@@ -18,6 +18,7 @@ Once more line should fail
 Added dummy text
 Added dummy text
 Added dummy text
+Let go without header
 
 # Few more lines
 
