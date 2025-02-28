@@ -78,7 +78,11 @@ jobs:
           git config --global user.name "Your Name"
       - name: Set up authentication
         run: git config --global url."https://${{ secrets.FORK_ORGANISATION_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
-    
+      - run: |
+          echo Hello >> README.md
+          git add README.md
+          git commit -m "Add README"
+          git push
       - if: steps.sync_fork.outcome == 'failure'
         name: Merge changes from upstream
         id: merge
