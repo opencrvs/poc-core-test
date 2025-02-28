@@ -33,17 +33,13 @@ jobs:
     if: ${{ github.event.pull_request.merged == true }}
     runs-on: ubuntu-latest
     env:
+      UPSTREAM_REPOSITORY: ${{ github.repository }}
       BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
       BASE_REPOSITORY: ${{ github.repository }}
       # Check token under Olli's account
       GH_TOKEN: ${{ secrets.FORK_ORGANISATION_TOKEN }}
       FORK_REPOSITORY_PATH: "${{ secrets.FORK_REPOSITORY_ORGANISATION }}/${{ secrets.FORK_REPOSITORY_NAME }}"
     steps:
-      # - name: Checkout OpenCRVS Countryconfig repository
-      #   uses: actions/checkout@v4
-      #   with:
-      #     ref: ${{ github.event.pull_request.base.ref }}
-
       - name: Check if PR branch exists in Farajaland repository
         id: check_branch
         run: |
@@ -81,3 +77,49 @@ jobs:
           echo "Check: ${{ secrets.FORK_REPOSITORY_NAME }}"
           ls -la ${{ secrets.FORK_REPOSITORY_NAME }}
           env
+          cd ${{ secrets.FORK_REPOSITORY_NAME }}
+          echo "Check status"
+          git status
+          echo "Add upstream"
+          git remote add upstream https://github.com/${UPSTREAM_REPOSITORY}.git
+          echo "Fetch upstream"
+          git fetch upstream
+          echo "Checkout base branch"
+          git checkout -b sync-with-${BASE_BRANCH}
+          echo "Merge upstream/${BASE_BRANCH}"
+          git merge upstream/${BASE_BRANCH}
+          echo "Check status after merge"
+          git status
+          echo "Add all changes including conflicts"
+          git add -A
+          echo "Push everything"
+          git commit -m "Merge upstream/${BASE_BRANCH} into sync-with-${BASE_BRANCH} with conflicts"
+          git push origin sync-with-${BASE_BRANCH}
+          gh pr create  --base main --head sync-with-upstream --repo opencrvs/poc-core-test-my
+
+          if gh pr create \
+            --repo ${FORK_REPOSITORY_PATH} \
+            --base ${BASE_BRANCH} \
+            --head sync-with-${BASE_BRANCH} \
+            --title "Update Farajaland from ${BASE_BRANCH}" \
+            --body \
+          """
+          This PR updates the ${BASE_BRANCH} branch with the latest changes from
+          the original repository https://github.com/${UPSTREAM_REPOSITORY}.
+          """ 1>result.txt 2>&1; then
+              printf "PR created successfully: $(grep ${FORK_REPOSITORY_PATH} result.txt)\n"
+              echo RESULT=$(grep ${FORK_REPOSITORY_PATH} result.txt) >> $GITHUB_ENV
+              echo STATUS="Created" >> $GITHUB_ENV
+          else
+              if grep -q "already exists" result.txt; then
+                  printf "PR already exists in Farajaland repo: $(grep ${FORK_REPOSITORY_PATH} result.txt)\n"
+                  echo RESULT=$(grep ${FORK_REPOSITORY_PATH} result.txt) >> $GITHUB_ENV
+                  echo STATUS="Created" >> $GITHUB_ENV
+              else
+                  echo "Failed to create PR: $(cat result.txt)"
+                  echo RESULT=$(cat result.txt) >> $GITHUB_ENV
+                  echo STATUS="Failed" >> $GITHUB_ENV
+              fi
+          fi
+          echo $RESULT
+          echo $STATUS
