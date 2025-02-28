@@ -64,3 +64,14 @@ jobs:
         run: |
           gh repo sync ${FORK_REPOSITORY_PATH} --branch ${BASE_BRANCH}
           echo STATUS="Synced" >> $GITHUB_ENV
+
+      - name: Checkout OpenCRVS Farajaland repository
+        if: steps.sync_fork.outcome == 'failure'
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          repository: 'opencrvs/opencrvs-farajaland'
+          path: './opencrvs-farajaland'
+      - run: |
+          pwd
+          ls -la
