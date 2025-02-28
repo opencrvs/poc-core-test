@@ -74,35 +74,29 @@ jobs:
           git config --global user.email "you@example.com"
           git config --global user.name "Your Name"
       - if: steps.sync_fork.outcome == 'failure'
+        name: Merge changes from upstream
+        id: merge
+        continue-on-error: true
         run: |
-          pwd
-          echo "Check: .."
-          ls -la ..
-          echo "Check: ."
-          ls -la
-          echo "Check: ${{ secrets.FORK_REPOSITORY_NAME }}"
-          ls -la ${{ secrets.FORK_REPOSITORY_NAME }}
-          env
           cd ${{ secrets.FORK_REPOSITORY_NAME }}
-          echo "Check status"
-          git status
-          echo "Add upstream"
           git remote add upstream https://github.com/${UPSTREAM_REPOSITORY}.git
-          echo "Fetch upstream"
           git fetch upstream
-          echo "Checkout base branch"
           git checkout -b sync-with-${BASE_BRANCH}
-          echo "Merge upstream/${BASE_BRANCH}"
-          git merge upstream/${BASE_BRANCH} || true
-          echo "Check status after merge"
-          git status
-          echo "Add all changes including conflicts"
+          git merge upstream/${BASE_BRANCH}
+      - if: steps.merge.outcome == 'failure'
+        name: Handle merge conflicts
+        run: |
           git add -A
-          echo "Push everything"
+          echo "Commit everything"
           git commit -m "Merge upstream/${BASE_BRANCH} into sync-with-${BASE_BRANCH} with conflicts"
-          git push origin sync-with-${BASE_BRANCH}
-          gh pr create  --base main --head sync-with-upstream --repo opencrvs/poc-core-test-my
 
+      - name: Push Branch
+        run: |
+          git push https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/opencrvs/poc-core-test-my.git sync-with-upstream
+    
+      - name: Create PR in ${{ secrets.FORK_REPOSITORY_ORGANISATION }}/${{ secrets.FORK_REPOSITORY_NAME }}
+        if: steps.sync_fork.outcome == 'failure'
+        run: |
           if gh pr create \
             --repo ${FORK_REPOSITORY_PATH} \
             --base ${BASE_BRANCH} \
