@@ -71,7 +71,7 @@ jobs:
         with:
           fetch-depth: 0
           repository: '${{ secrets.FORK_REPOSITORY_ORGANISATION }}/${{ secrets.FORK_REPOSITORY_NAME }}'
-          path: '../${{ secrets.FORK_REPOSITORY_NAME }}'
+          path: '${{ secrets.FORK_REPOSITORY_NAME }}'
       - run: |
           pwd
           ls -la ..
