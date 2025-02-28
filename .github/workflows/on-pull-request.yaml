@@ -98,13 +98,11 @@ jobs:
           git add -A
           echo "Commit everything"
           git commit -m "Merge upstream/${BASE_BRANCH} into sync-with-${BASE_BRANCH} with conflicts"
-          git status
 
-          git remote -v
       - name: Push Branch
         run: |
-          git push https://x-access-token:${{ secrets.FORK_ORGANISATION_TOKEN }}@github.com/${FORK_REPOSITORY_PATH}.git sync-with-${BASE_BRANCH} ||\
-          git push https://x-access-token:${GH_TOKEN}@github.com/${FORK_REPOSITORY_PATH}.git sync-with-${BASE_BRANCH}
+          git remote -v
+          git push https://x-access-token:${{ secrets.FORK_ORGANISATION_TOKEN }}@github.com/${FORK_REPOSITORY_PATH}.git sync-with-${BASE_BRANCH}
 
       - name: Create PR in ${{ env.FORK_REPOSITORY_ORGANISATION }}/${{ env.FORK_REPOSITORY_NAME }}
         if: steps.sync_fork.outcome == 'failure'
