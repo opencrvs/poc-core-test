@@ -39,10 +39,10 @@ jobs:
       GH_TOKEN: ${{ secrets.FORK_ORGANISATION_TOKEN }}
       FORK_REPOSITORY_PATH: "${{ secrets.FORK_REPOSITORY_ORGANISATION }}/${{ secrets.FORK_REPOSITORY_NAME }}"
     steps:
-      - name: Checkout OpenCRVS Countryconfig repository
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.base.ref }}
+      # - name: Checkout OpenCRVS Countryconfig repository
+      #   uses: actions/checkout@v4
+      #   with:
+      #     ref: ${{ github.event.pull_request.base.ref }}
 
       - name: Check if PR branch exists in Farajaland repository
         id: check_branch
