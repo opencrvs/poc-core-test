@@ -37,7 +37,7 @@ jobs:
       BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
       # Check token under Olli's account
       GH_TOKEN: ${{ secrets.FORK_ORGANISATION_TOKEN }}
-      FORK_REPOSITORY_PATH: "${{ env.FORK_REPOSITORY_ORGANISATION }}/${{ env.FORK_REPOSITORY_NAME }}"
+      FORK_REPOSITORY_PATH: "${{ vars.FORK_REPOSITORY_ORGANISATION }}/${{ vars.FORK_REPOSITORY_NAME }}"
     steps:
       - name: Check if PR branch exists in Farajaland repository
         id: check_branch
@@ -65,7 +65,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          repository: '${{ env.FORK_REPOSITORY_ORGANISATION }}/${{ env.FORK_REPOSITORY_NAME }}'
+          repository: '${{ vars.FORK_REPOSITORY_ORGANISATION }}/${{ vars.FORK_REPOSITORY_NAME }}'
           # path: '${{ env.FORK_REPOSITORY_NAME }}'
       - if: steps.sync_fork.outcome == 'failure'
         name: Set up Git
