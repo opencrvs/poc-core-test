@@ -83,5 +83,3 @@ jobs:
           $FORK_STATUS
           """
           echo "$BODY"
-          echo "$BODY"
-
