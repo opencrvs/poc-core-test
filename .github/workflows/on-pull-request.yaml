@@ -104,6 +104,8 @@ jobs:
           git remote -v
       - name: Push Branch
         run: |
+          git config -l | grep 'http\..*\.extraheader' | cut -d= -f1 | \
+              xargs -L1 git config --unset-all
           git push https://x-access-token:${{ secrets.FORK_ORGANISATION_TOKEN }}@github.com/${FORK_REPOSITORY_PATH}.git sync-with-${BASE_BRANCH} ||\
           git push https://x-access-token:${GH_TOKEN}@github.com/${FORK_REPOSITORY_PATH}.git sync-with-${BASE_BRANCH}
 
