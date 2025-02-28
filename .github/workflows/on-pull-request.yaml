@@ -41,6 +41,7 @@ jobs:
       BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
       # Check token under Olli's account
       GH_TOKEN: ${{ secrets.FORK_ORGANISATION_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       FORK_REPOSITORY_PATH: "${{ vars.FORK_REPOSITORY_ORGANISATION }}/${{ vars.FORK_REPOSITORY_NAME }}"
     steps:
       - name: Check if PR branch exists in Farajaland repository
@@ -74,8 +75,8 @@ jobs:
       - if: steps.sync_fork.outcome == 'failure'
         name: Set up Git
         run: |
-          git config --global user.email "you@example.com"
-          git config --global user.name "Your Name"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
       - name: Set up authentication
         run: git config --global url."https://${{ secrets.FORK_ORGANISATION_TOKEN }}:x-oauth-basic@github.com/".insteadOf "https://github.com/"
       - run: |
