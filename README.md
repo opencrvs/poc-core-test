@@ -14,7 +14,8 @@ One more line
 Once more line should fail
 
 # header
-
+Added dummy text
+Added dummy text
 Added dummy text
 
 # Few more lines
