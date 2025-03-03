@@ -140,9 +140,8 @@ jobs:
           [ "x$STATUS" == "xFailed" ] && \
               FORK_STATUS="❌ Failed to create PR in Farajaland repository: $RESULT"
           BODY="""
-          <@userID> ${{ github.actor }}
-          Pull request https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
-          authored by <https://github.com/${{ github.actor }}|@${{ github.actor }}> from branch ${{ github.head_ref }} was merged into ${BASE_BRANCH}.
+          🚀 Pull request https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
+          authored by 👤 <https://github.com/${{ github.actor }}|@${{ github.actor }}> from branch ${{ github.head_ref }} was merged into ${BASE_BRANCH}.
 
           $FORK_STATUS
           """
@@ -152,6 +151,6 @@ jobs:
           -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" \
           -H 'Content-type: application/json' \
           --data "{
-            'channel': 'C02LU432JGK',
+            'channel': 'C08FCLKER8X',
             'text': '$BODY'
           }"
