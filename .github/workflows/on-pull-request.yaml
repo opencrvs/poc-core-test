@@ -140,13 +140,15 @@ jobs:
           [ "x$STATUS" == "xFailed" ] && \
               FORK_STATUS="❌ Failed to create PR in Farajaland repository: $RESULT"
           BODY="""
+          <@userID> ${{ github.actor }}
           Pull request https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}
           authored by ${{ github.actor }} from branch ${{ github.head_ref }} was merged into ${BASE_BRANCH}.
 
           $FORK_STATUS
           """
           echo "$BODY"
-
+          curl -X GET https://slack.com/api/users.list \
+            -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}"
           # curl -X POST https://slack.com/api/chat.postMessage \
           # -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" \
           # -H 'Content-type: application/json' \
