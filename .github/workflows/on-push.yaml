@@ -22,7 +22,7 @@ jobs:
         run: |
           curl -X GET https://slack.com/api/users.list \
             -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}"
-          BODY="Hello, this is a test message from GitHub Actions by ${{ github.actor }} <@vadym@opencrvs.org>!"
+          BODY="Hello, this is a test message from GitHub Actions by <https://github.com/${{ github.actor }}|@${{ github.actor }}>!"
           curl -X POST https://slack.com/api/chat.postMessage \
           -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" \
           -H 'Content-type: application/json' \
