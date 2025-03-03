@@ -28,5 +28,7 @@ jobs:
           -H 'Content-type: application/json' \
           --data "{
             'channel': 'C08FCLKER8X',
-            'text': '$BODY'
+            'text': '$BODY',
+            'unfurl_links': true,
+            'unfurl_media': true
           }"
