@@ -47,7 +47,7 @@ jobs:
       - name: Check if PR branch exists in Farajaland repository
         id: check_branch
         run: |
-          if git ls-remote --heads https://${GH_TOKEN}@github.com/${FORK_REPOSITORY_PATH}.git "$BASE_BRANCH" | grep "$BASE_BRANCH"; then
+          if git ls-remote --heads https://${GITHUB_TOKEN}@github.com/${FORK_REPOSITORY_PATH}.git "$BASE_BRANCH" | grep "$BASE_BRANCH"; then
             echo "branch_exists=true" >> $GITHUB_ENV
           else
             echo "=============================================="
@@ -71,8 +71,10 @@ jobs:
         with:
           fetch-depth: 0
           repository: '${{ vars.FORK_REPOSITORY_ORGANISATION }}/${{ vars.FORK_REPOSITORY_NAME }}'
+          ref: ${{ github.event.pull_request.base.ref }}
+
       - if: steps.sync_fork.outcome == 'failure'
-        name: Set up Git
+        name: Set up Farajaland Git repository
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -90,17 +92,14 @@ jobs:
           git fetch upstream
           git checkout -b sync-with-${BASE_BRANCH}
           git merge upstream/${BASE_BRANCH}
+
       - if: steps.merge.outcome == 'failure'
         name: Handle merge conflicts
         run: |
           git add -A
-          echo "Commit everything"
           git commit -m "Merge upstream/${BASE_BRANCH} into sync-with-${BASE_BRANCH} with conflicts"
-
-      - name: Push Branch
-        run: |
+          echo "Push to sync-with-${BASE_BRANCH}"
           git remote -v
-
           git pull origin sync-with-${BASE_BRANCH}
           git push origin sync-with-${BASE_BRANCH}
 
