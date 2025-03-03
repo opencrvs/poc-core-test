@@ -29,6 +29,6 @@ jobs:
           --data "{
             'channel': 'C08FCLKER8X',
             'text': '$BODY',
-            'unfurl_links': true,
-            'unfurl_media': true
+            'unfurl_links': false,
+            'unfurl_media': false
           }"
